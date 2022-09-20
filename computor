@@ -38,8 +38,7 @@ class monomial:
 		# self.string = ""
 		# self.string += str(self.coefficient) + " * X^" + str(self.exponent)
 
-	def set_monomial(self, exponent, coefficient, sign):
-		self.exponent = exponent
+	def set_monomial(self, coefficient, sign):
 		self.coefficient += (coefficient * sign)
 		if (self.coefficient < 0):
 			self.sign = -1
@@ -50,9 +49,11 @@ class monomial:
 
 def parse_monomial(i, equation, polynomials, equation_len, equal):
 	sign = 1
-	monomial_to_set = 0
-	coefficient = float(equation[i])
 	monomial_len = 1
+	if (equation[i].isnumeric() == False):
+		print("non numeric character in coefficient, possibly ' * X' missing")
+		return -1
+	coefficient = float(equation[i])
 	# checking if the monomial is negative or on the right side of the equal sign
 	if (i > 0):
 		if ((equation[i - 1] == "-" and equal == False) or (equation[i - 1] != "-" and equal == True)):
@@ -68,10 +69,10 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 		# checking that there is ^, else: error message and exit
 		if ("^" in equation[i + 2]):
 			temp = []
-			# splitting the X and the exponent
+			# splitting the X and the exponent if there is one
 			temp = equation[i + 2].split("^")
-			if (len(temp) != 2):
-				print("error exponent missing after ^")
+			if (temp[1] == ""):
+				print("error exponent missing after '^'")
 				return -1
 			exponent_str = temp[1]
 			exponent = int(exponent_str)
@@ -84,16 +85,16 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 					exponent_found = True
 			# if it exists already, adding the coeficient to the existing one
 			if (exponent_found):
-				polynomials[index].set_monomial(exponent, coefficient, sign)
+				polynomials[index].set_monomial(coefficient, sign)
 			# if not, adding a new monomial to the end of polynomials
 			else:
 				polynomials.append( monomial("", exponent, coefficient, sign) )
 			monomial_len += 1
 		else:
-			print("error no ^ after X")
+			print("error no '^' after 'X'")
 			return -1
 	else:
-		print("error no X after *")
+		print("error no 'X' after '*'")
 		return -1
 	return (monomial_len)
 
@@ -142,7 +143,7 @@ def main():
 		polynomials = []
 
 		# splitting the argument into strings/tokens
-		equation = argument.split(" ")
+		equation = argument.split()
 		# print(equation)
 
 		# keeping track of the number of tokens in the equation
@@ -167,6 +168,9 @@ def main():
 			# if a number was not found, moving to the next token
 			else:
 				i += 1
+		if (equal == False):
+			print("error no '='")
+			return
 		print_result(polynomials)
 	else:
 		print("usage: python3 computor \"equation\"")
