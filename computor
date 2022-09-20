@@ -50,7 +50,7 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 	monomial_len = 1
 	# checking if the monomial is negative or on the right side of the equal sign
 	if (i > 0):
-		if (equation[i - 1] == "-" or equal):
+		if ((equation[i - 1] == "-" and equal != 1) or equal):
 			sign = -1
 	if (i + 1 < equation_len and equation[i + 1] == "*"):
 		monomial_len += 1
@@ -75,14 +75,13 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 					polynomials[i].set_monomial(exponent, coefficient, sign)
 					exponent_found = True
 			if (exponent_found):
-				pass
+				print("****")
 			else:
 				polynomials.append( monomial("", exponent, coefficient, sign) )
 			print("monomial degree: " + temp[1])
 	else:
 		print("error no X after *")
 		return -1
-
 	return (monomial_len)
 
 def print_result(polynomials):
@@ -144,3 +143,4 @@ def main():
 main()
 
 # python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 3"
+# python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 8 * X^2 - 3 * X^0"
