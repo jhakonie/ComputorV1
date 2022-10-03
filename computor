@@ -8,18 +8,28 @@ class polynomial_context:
 		self.a = a
 		self.b = b
 		self.c = c
+		self.degree_1 = False
 		self.no_solution = False
+		self.negative_discriminant = False
 		self.only_one_result = False
 		self.infinite_results = False
-		self.discriminant = self.b * self.b - 4 * self.a * self.c
+		self.discriminant = (self.b * self.b) - (4 * self.a * self.c)
 		self.denominator = 2 * self.a
-		if (self.discriminant < 0 or self.denominator == 0):
-			self.no_solution = True
+		if (self.a == 0 and self.b == 0 and self.c == 0):
+			self.infinite_results = True
+		elif (self.a == 0):
+			self.degree_1 = True
+			if (self.b == 0 and self.c != 0):
+				self.no_solution = True
+			else:
+				self.result_1 = -self.c / self.b
+		elif (self.discriminant < 0):
+			self.negative_discriminant = True
 		else:
 			if (self.discriminant == 0):
 				self.only_one_result = True
-			self.numerator_0 = -b + math.sqrt(self.discriminant)
-			self.numerator_1 = -b - math.sqrt(self.discriminant)
+			self.numerator_0 = -self.b + math.sqrt(self.discriminant)
+			self.numerator_1 = -self.b - math.sqrt(self.discriminant)
 			self.result_0 = self.numerator_0 / self.denominator
 			self.result_1 = self.numerator_1 / self.denominator
 			if (self.result_0 == 0 and self.result_1 == 0):
@@ -47,10 +57,17 @@ class monomial:
 		# self.str = ""
 		# self.str += str(self.coefficient * sign) + " * X^" + str(self.exponent)
 
+def is_float(string):
+	try:
+		float(string)
+		return True
+	except ValueError:
+		return False
+
 def parse_monomial(i, equation, polynomials, equation_len, equal):
 	sign = 1
 	monomial_len = 1
-	if (equation[i].isnumeric() == False):
+	if (not is_float(equation[i])):
 		print("non numeric character in coefficient, possibly ' * X' missing")
 		return -1
 	coefficient = float(equation[i])
@@ -98,6 +115,16 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 		return -1
 	return (monomial_len)
 
+def add_missing_polynomial(polynomials, len_polynomials):
+	list_exponents = [p.exponent for p in polynomials]
+	if 2 not in list_exponents:
+		polynomials.append(monomial("", 2, 0, 1))
+	if 1 not in list_exponents:
+		polynomials.append(monomial("", 1, 0, 1))
+	if 0 not in list_exponents:
+		polynomials.append(monomial("", 0, 0, 1))
+	polynomials.sort(key = lambda x: x.exponent, reverse = False)
+
 def print_result(polynomials):
 	reduced_form = "Reduced form: "
 	polynomial_degree = 0
@@ -107,7 +134,7 @@ def print_result(polynomials):
 	while (i < len_polynomials):
 		if (polynomials[i].sign < 0):
 			reduced_form += "- "
-		else:
+		elif (i != 0):
 			reduced_form += "+ "
 		reduced_form += str(polynomials[i].coefficient * polynomials[i].sign) + " * X^" + str(polynomials[i].exponent) + " "
 		if (polynomial_degree < polynomials[i].exponent):
@@ -121,18 +148,24 @@ def print_result(polynomials):
 	if (polynomial_degree > 2):
 		print ("The polynomial degree is strictly greater than 2, I can't solve.")
 		return
-	elif (len_polynomials == 3):
-		solver = polynomial_context(polynomials[0].coefficient, polynomials[1].coefficient, polynomials[2].coefficient)
+	elif (len_polynomials <= 3):
+		if (len_polynomials < 3):
+			add_missing_polynomial(polynomials, len_polynomials)
+		solver = polynomial_context(polynomials[2].coefficient, polynomials[1].coefficient, polynomials[0].coefficient)
 		if (solver.no_solution):
-			print("discriminant < 0 or denominator == 0, no solution")
+			print("0-degree equation unequals 0 -> no solution.")
+		elif (solver.degree_1):
+			print("Result is: " + str(solver.result_1))
+		elif (solver.negative_discriminant):
+			print("Discriminant is negative -> no solution.")
 		elif (solver.only_one_result):
-			print("Result is:" + str(solver.result_0))
+			print("Result is: " + str(solver.result_0))
 		elif (solver.infinite_results):
-			print("Each real number is a solution")
+			print("Each real number is a solution.")
 		else:
 			print("Discriminant is strictly positive, the two solutions are:")
-			print(str(solver.result_0))
 			print(str(solver.result_1))
+			print(str(solver.result_0))
 
 def main():
 	if (len(sys.argv) == 2):
@@ -178,3 +211,5 @@ main()
 
 # python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 3"
 # python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 8 * X^2 - 3 * X^0"
+# python3 computor "5 * X^0 + 4 * X^1 = 4 * X^0"
+# python3 computor "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"
