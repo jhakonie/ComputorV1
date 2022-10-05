@@ -2,60 +2,20 @@
 
 import math
 import sys
-
-class polynomial_context:
-	def __init__(self, a, b, c):
-		self.a = a
-		self.b = b
-		self.c = c
-		self.degree_1 = False
-		self.no_solution = False
-		self.negative_discriminant = False
-		self.only_one_result = False
-		self.infinite_results = False
-		self.discriminant = (self.b * self.b) - (4 * self.a * self.c)
-		self.denominator = 2 * self.a
-		if (self.a == 0 and self.b == 0 and self.c == 0):
-			self.infinite_results = True
-		elif (self.a == 0):
-			self.degree_1 = True
-			if (self.b == 0 and self.c != 0):
-				self.no_solution = True
-			else:
-				self.result_1 = -self.c / self.b
-		elif (self.discriminant < 0):
-			self.negative_discriminant = True
-		else:
-			if (self.discriminant == 0):
-				self.only_one_result = True
-			self.numerator_0 = -self.b + math.sqrt(self.discriminant)
-			self.numerator_1 = -self.b - math.sqrt(self.discriminant)
-			self.result_0 = self.numerator_0 / self.denominator
-			self.result_1 = self.numerator_1 / self.denominator
-			if (self.result_0 == 0 and self.result_1 == 0):
-				self.infinite_results = True
-
-# def solve_polynomial()
+import second_degree
 
 class monomial:
-	def __init__(self, string, exponent, coefficient, sign): #remove string?
-		self.str = string
+	def __init__(self, exponent, coefficient, sign):
 		self.exponent = exponent
 		self.coefficient = coefficient * sign
 		self.sign = sign
-		# if (self.coefficient < 0):
-		# 	self.sign = -1
-		# self.string = ""
-		# self.string += str(self.coefficient) + " * X^" + str(self.exponent)
 
-	def set_monomial(self, coefficient, sign):
+	def add_monomial(self, coefficient, sign):
 		self.coefficient += (coefficient * sign)
 		if (self.coefficient < 0):
 			self.sign = -1
 		else:
 			self.sign = 1
-		# self.str = ""
-		# self.str += str(self.coefficient * sign) + " * X^" + str(self.exponent)
 
 def is_float(string):
 	try:
@@ -74,12 +34,18 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 	# checking if the monomial is negative or on the right side of the equal sign
 	if (i > 0):
 		if ((equation[i - 1] == "-" and equal == False) or (equation[i - 1] != "-" and equal == True)):
-			sign = -1
+			sign *= -1
+			if (coefficient < 0):
+				sign *= -1
+				coefficient *= sign
+	if (coefficient < 0):
+		sign *= -1
+		coefficient *= sign
 	# checking that there is a * sign
 	if (i + 1 < equation_len and equation[i + 1] == "*"):
 		monomial_len += 1
 	else:
-		print("incorrect syntax '*' missing")
+		print("error: incorrect syntax '*' missing")
 		return -1
 	# checking that there is X, else: error message and exit
 	if (i + 2 < equation_len and "X" in equation[i + 2]):
@@ -88,11 +54,14 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 			temp = []
 			# splitting the X and the exponent if there is one
 			temp = equation[i + 2].split("^")
-			if (temp[1] == ""):
-				print("error exponent missing after '^'")
+			if (len(temp[0]) > 1):
+				print("error: characters before of after 'X'")
+				return -1
+			if (temp[1] == "" or not is_float(temp[1])):
+				print("error: exponent missing or contains non-numeric characters after '^'")
 				return -1
 			exponent_str = temp[1]
-			exponent = int(exponent_str)
+			exponent = int(float(exponent_str))
 			len_polynomials = len(polynomials)
 			exponent_found = False
 			# checking if a monomial with the same exponent already exists in polynomials list
@@ -102,10 +71,10 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 					exponent_found = True
 			# if it exists already, adding the coeficient to the existing one
 			if (exponent_found):
-				polynomials[index].set_monomial(coefficient, sign)
+				polynomials[index].add_monomial(coefficient, sign)
 			# if not, adding a new monomial to the end of polynomials
 			else:
-				polynomials.append( monomial("", exponent, coefficient, sign) )
+				polynomials.append(monomial(exponent, coefficient, sign))
 			monomial_len += 1
 		else:
 			print("error no '^' after 'X'")
@@ -118,22 +87,50 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 def add_missing_polynomial(polynomials, len_polynomials):
 	list_exponents = [p.exponent for p in polynomials]
 	if 2 not in list_exponents:
-		polynomials.append(monomial("", 2, 0, 1))
+		polynomials.append(monomial(2, 0, 1))
 	if 1 not in list_exponents:
-		polynomials.append(monomial("", 1, 0, 1))
+		polynomials.append(monomial(1, 0, 1))
 	if 0 not in list_exponents:
-		polynomials.append(monomial("", 0, 0, 1))
+		polynomials.append(monomial(0, 0, 1))
 	polynomials.sort(key = lambda x: x.exponent, reverse = False)
 
+def print_solution(polynomials, polynomial_degree, len_polynomials):
+	if (len_polynomials < 3):
+		add_missing_polynomial(polynomials, len_polynomials)
+	# Solve ax^2 + bx + c = 0
+	a = polynomials[2].coefficient
+	b = polynomials[1].coefficient
+	c = polynomials[0].coefficient
+	solver = second_degree.solver(a, b, c)
+	# print results
+	if (solver.no_solution):
+		print("0-degree equation unequals 0 -> no solution.")
+	elif (solver.degree_1):
+		print("Result is: " + str(solver.result_1))
+	elif (solver.negative_discriminant):
+		print("Discriminant is negative -> no solution.")
+	elif (solver.only_one_result):
+		print("Result is:\n" + str(solver.result_0))
+	elif (solver.infinite_results):
+		print("Each real number is a solution.")
+	else:
+		print("Discriminant is strictly positive, the two solutions are:")
+		print(str(solver.result_1))
+		print(str(solver.result_0))
+
 def print_result(polynomials):
-	reduced_form = "Reduced form: "
-	polynomial_degree = 0
+	# Sort polynomials by degree, ascending order
 	polynomials.sort(key = lambda x: x.exponent, reverse = False)
 	len_polynomials = len(polynomials)
 	i = 0
+	# Create string with the reduced form, keep track of the polynomial degree
+	reduced_form = "Reduced form: "
+	polynomial_degree = 0
 	while (i < len_polynomials):
-		if (polynomials[i].sign < 0):
+		if (polynomials[i].sign < 0 and i != 0):
 			reduced_form += "- "
+		elif (polynomials[i].sign < 0 and i == 0):
+			reduced_form += "-"
 		elif (i != 0):
 			reduced_form += "+ "
 		reduced_form += str(polynomials[i].coefficient * polynomials[i].sign) + " * X^" + str(polynomials[i].exponent) + " "
@@ -142,30 +139,12 @@ def print_result(polynomials):
 		i += 1
 	reduced_form += "= 0"
 	print(reduced_form)
-
 	print("Polynomial degree: " + str(polynomial_degree))
-
 	if (polynomial_degree > 2):
 		print ("The polynomial degree is strictly greater than 2, I can't solve.")
 		return
-	elif (len_polynomials <= 3):
-		if (len_polynomials < 3):
-			add_missing_polynomial(polynomials, len_polynomials)
-		solver = polynomial_context(polynomials[2].coefficient, polynomials[1].coefficient, polynomials[0].coefficient)
-		if (solver.no_solution):
-			print("0-degree equation unequals 0 -> no solution.")
-		elif (solver.degree_1):
-			print("Result is: " + str(solver.result_1))
-		elif (solver.negative_discriminant):
-			print("Discriminant is negative -> no solution.")
-		elif (solver.only_one_result):
-			print("Result is: " + str(solver.result_0))
-		elif (solver.infinite_results):
-			print("Each real number is a solution.")
-		else:
-			print("Discriminant is strictly positive, the two solutions are:")
-			print(str(solver.result_1))
-			print(str(solver.result_0))
+	else:
+		print_solution(polynomials, polynomial_degree, len_polynomials)
 
 def main():
 	if (len(sys.argv) == 2):
@@ -184,14 +163,16 @@ def main():
 		# print(equation_len)
 
 		# keeping track of the equal sign, 0 means it hasn't passed yet
-		equal = False
+		equal = 0
 		i = 0
 		while (i < equation_len):
 			if (equation[i][0] == "="):
-				equal = True
+				equal += 1
 				i += 1
+			if (equal > 1):
+				break
 			# a token begins with a number, if found, start parsing the polynomial term
-			if (equation[i][0].isnumeric()):
+			if (i < equation_len and is_float(equation[i])):
 				j = parse_monomial(i, equation, polynomials, equation_len, equal)
 				# check for possible error encountered in parsing and quit
 				if (j == -1):
@@ -201,15 +182,19 @@ def main():
 			# if a number was not found, moving to the next token
 			else:
 				i += 1
-		if (equal == False):
+		if (equal == 0):
 			print("error no '='")
-			return
-		print_result(polynomials)
+		elif (equal > 1):
+			print("error second '='")
+		else:
+			print_result(polynomials)
 	else:
-		print("usage: python3 computor \"equation\"")
+		print("usage: python3 computor \"equation\", polynomial format '- a * X^b'")
 main()
 
 # python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 3"
 # python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 8 * X^2 - 3 * X^0"
 # python3 computor "5 * X^0 + 4 * X^1 = 4 * X^0"
 # python3 computor "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"
+
+# no solution python3 computor "-50 * X^0  + 12* X^2 = 5 * X^0"
