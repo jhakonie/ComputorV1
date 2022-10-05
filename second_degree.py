@@ -6,6 +6,7 @@ class solver:
 		self.a = a
 		self.b = b
 		self.c = c
+		self.i = 0
 		self.degree_1 = False
 		self.no_solution = False
 		self.negative_discriminant = False
@@ -23,6 +24,10 @@ class solver:
 				self.result_1 = -self.c / self.b
 		elif (self.discriminant < 0):
 			self.negative_discriminant = True
+			self.i = sqrt.solve(self.discriminant)
+			self.i = self.i / self.denominator
+			self.result_0 = self.b / self.denominator
+			self.result_1 = self.b / self.denominator
 		else:
 			if (self.discriminant == 0):
 				self.only_one_result = True
@@ -30,5 +35,3 @@ class solver:
 			self.numerator_1 = -self.b - sqrt.solve(self.discriminant)
 			self.result_0 = self.numerator_0 / self.denominator
 			self.result_1 = self.numerator_1 / self.denominator
-			if (self.result_0 == 0 and self.result_1 == 0):
-				self.infinite_results = True

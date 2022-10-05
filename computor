@@ -108,7 +108,19 @@ def print_solution(polynomials, polynomial_degree, len_polynomials):
 	elif (solver.degree_1):
 		print("Result is: " + str(solver.result_1))
 	elif (solver.negative_discriminant):
-		print("Discriminant is negative -> no solution.")
+		print("Discriminant is strictly negative, the two complex solutions are:")
+		if (solver.result_1 == 0 or solver.result_1 == -0):
+			result1 = str(solver.i) + "i"
+		if (solver.result_0 == 0 or solver.result_0 == -0):
+			result2 = str(solver.i * -1) + "i"
+		# elif (solver.i == 0 or solver.i == -0):
+		# 	result1 = str(solver.result_1)
+		# 	result2 = str(solver.result_0)
+		else:
+			result1 = (str(solver.result_1) + " + " + str(solver.i) + "i")
+			result2 = (str(solver.result_0) + " - " + str(solver.i) + "i")
+		print(result1)
+		print(result2)
 	elif (solver.only_one_result):
 		print("Result is:\n" + str(solver.result_0))
 	elif (solver.infinite_results):
@@ -198,3 +210,5 @@ main()
 # python3 computor "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"
 
 # no solution python3 computor "-50 * X^0  + 12* X^2 = 5 * X^0"
+# complex solution python3 computor "-50 * X^0  + -12 * X^2 = - -5 * X^0"
+# complex solution python3 computor "-50 * X^0  + -12 * X^2 = - -3 * X^1"
