@@ -1,0 +1,14 @@
+# 2 real solutions, python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 3 * X^0"
+# 2 real solutions, python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 8 * X^2 - 3 * X^0"
+
+# subject example, 1 degree, python3 computor "5 * X^0 + 4 * X^1 = 4 * X^0"
+# subject example, 2 real solutions, python3 computor "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"
+# subject example, python3 computor "8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0"
+
+# no solution, -55 = 0, python3 computor "-50 * X^0 + 12* X^2 = 5 * X^0"
+# complex solution, python3 computor "-50 * X^0  + -12 * X^2 = - -5 * X^0"
+# complex solution, python3 computor "-50 * X^0  + -12 * X^2 = - -3 * X^1"
+# only 1 solution degree 2, python3 computor "1 * X^0  + 1 * X^2 = 2 * X^1"
+# only 1 solution degree 2, python3 computor "5 * X^1 + 4 * X^1 - 2 * X^2 = - 2 * X^2"
+# 2 real solutions, one is 0, python3 computor "5 * X^1 + 4 * X^1 - 9.3 * X^2 = "
+# 0 = 0 python3 computor "2 * X^2 - 2 * X^2 + 2 * X^1 - 2 * X^1 ="

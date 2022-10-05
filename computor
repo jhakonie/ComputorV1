@@ -41,7 +41,10 @@ def parse_monomial(i, equation, polynomials, equation_len, equal):
 	if (coefficient < 0):
 		sign *= -1
 		coefficient *= sign
-	# checking that there is a * sign
+		if (equal == True):
+			sign *= -1
+			coefficient *= sign
+	# checking that there is a * operator
 	if (i + 1 < equation_len and equation[i + 1] == "*"):
 		monomial_len += 1
 	else:
@@ -95,6 +98,7 @@ def add_missing_polynomial(polynomials, len_polynomials):
 	polynomials.sort(key = lambda x: x.exponent, reverse = False)
 
 def print_solution(polynomials, polynomial_degree, len_polynomials):
+	# if some terms are missing, add their value as 0
 	if (len_polynomials < 3):
 		add_missing_polynomial(polynomials, len_polynomials)
 	# Solve ax^2 + bx + c = 0
@@ -106,25 +110,26 @@ def print_solution(polynomials, polynomial_degree, len_polynomials):
 	if (solver.no_solution):
 		print("0-degree equation unequals 0 -> no solution.")
 	elif (solver.degree_1):
-		print("Result is: " + str(solver.result_1))
+		print("Solution is:\n" + str(solver.result_1))
+	# print complex results
 	elif (solver.negative_discriminant):
 		print("Discriminant is strictly negative, the two complex solutions are:")
 		if (solver.result_1 == 0 or solver.result_1 == -0):
 			result1 = str(solver.i) + "i"
 		if (solver.result_0 == 0 or solver.result_0 == -0):
 			result2 = str(solver.i * -1) + "i"
-		# elif (solver.i == 0 or solver.i == -0):
-		# 	result1 = str(solver.result_1)
-		# 	result2 = str(solver.result_0)
 		else:
 			result1 = (str(solver.result_1) + " + " + str(solver.i) + "i")
 			result2 = (str(solver.result_0) + " - " + str(solver.i) + "i")
 		print(result1)
 		print(result2)
+	# print a single result
 	elif (solver.only_one_result):
-		print("Result is:\n" + str(solver.result_0))
+		print("Solution is:\n" + str(solver.result_0))
+	# print infinite results
 	elif (solver.infinite_results):
 		print("Each real number is a solution.")
+	# print real results
 	else:
 		print("Discriminant is strictly positive, the two solutions are:")
 		print(str(solver.result_1))
@@ -146,12 +151,13 @@ def print_result(polynomials):
 		elif (i != 0):
 			reduced_form += "+ "
 		reduced_form += str(polynomials[i].coefficient * polynomials[i].sign) + " * X^" + str(polynomials[i].exponent) + " "
-		if (polynomial_degree < polynomials[i].exponent):
+		if (polynomial_degree < polynomials[i].exponent and (polynomials[i].coefficient != 0 or polynomials[i].coefficient != -0)):
 			polynomial_degree = polynomials[i].exponent
 		i += 1
 	reduced_form += "= 0"
 	print(reduced_form)
 	print("Polynomial degree: " + str(polynomial_degree))
+	# only try to solve a second degree equation
 	if (polynomial_degree > 2):
 		print ("The polynomial degree is strictly greater than 2, I can't solve.")
 		return
@@ -160,19 +166,17 @@ def print_result(polynomials):
 
 def main():
 	if (len(sys.argv) == 2):
+
+		# an equation, for example: a * x^2 + b * x + c = 0
 		argument = sys.argv[1]
-
 		equation = []
-		# a list of polynomial terms of an equation, for example: a * x^2 + b * x + c = 0
-		polynomials = []
-
-		# splitting the argument into strings/tokens
+		# splitting the argument into strings/tokens by whitespaces
 		equation = argument.split()
-		# print(equation)
-
 		# keeping track of the number of tokens in the equation
 		equation_len = len(equation)
-		# print(equation_len)
+
+		# a list of polynomial terms of an equation, for example: a * x^2 + b * x + c = 0
+		polynomials = []
 
 		# keeping track of the equal sign, 0 means it hasn't passed yet
 		equal = 0
@@ -183,7 +187,7 @@ def main():
 				i += 1
 			if (equal > 1):
 				break
-			# a token begins with a number, if found, start parsing the polynomial term
+			# if a number is found, start parsing the polynomial term
 			if (i < equation_len and is_float(equation[i])):
 				j = parse_monomial(i, equation, polynomials, equation_len, equal)
 				# check for possible error encountered in parsing and quit
@@ -203,12 +207,3 @@ def main():
 	else:
 		print("usage: python3 computor \"equation\", polynomial format '- a * X^b'")
 main()
-
-# python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 3"
-# python3 computor "1 * X^2 + 2 * X^1 - 2 * X^0 = 8 * X^2 - 3 * X^0"
-# python3 computor "5 * X^0 + 4 * X^1 = 4 * X^0"
-# python3 computor "5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0"
-
-# no solution python3 computor "-50 * X^0  + 12* X^2 = 5 * X^0"
-# complex solution python3 computor "-50 * X^0  + -12 * X^2 = - -5 * X^0"
-# complex solution python3 computor "-50 * X^0  + -12 * X^2 = - -3 * X^1"
